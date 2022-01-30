@@ -19,25 +19,45 @@ const player = new Vimeo.Player(iframe);
 // обновление времени воспроизведения.
 
 // Сохраняй время воспроизведения в локальное хранилище. 
-// Пусть ключом для хранилища будет строка "videoplayer-current-time".
+// Пусть ключом для хранилища будет строка.
 
-const onPlayTime = function (time) {
-localStorage.setItem("videoplayer-current-time", JSON.stringify(time));
+const onPlayTime = function (data) {
+localStorage.setItem("videoplayer-current-time", JSON.stringify(data));
 };
 
 console.log(onPlayTime);
 // При перезагрузке страницы воспользуйся методом setCurrentTime() 
 // для того чтобы возобновить воспроизведение с сохраненной позиции.
-    player.on('timeupdate', throttle (onPlayTime, 1000)); // обновление 1 раз в 1 секунду
+    player.on('timeupdate', throttle(onPlayTime, 1000)); // обновление 1 раз в 1 секунду
 
 const savedTime = localStorage.getItem("videoplayer-current-time");
-console.log(savedTime);
+// console.log(savedTime);
 const parsedTime = JSON.parse(savedTime);
-console.log(parsedTime);
-const currentTime = parsedTime.seconds;
-console.log(currentTime);
+// console.log(parsedTime);
+//  
 
+if (parsedTime.seconds === 571.563) {
+    localStorage.removeItem('videoplayer-current-time'); //  удаляем с локалстор
+} else {
+    player
+    .setCurrentTime(parsedTime.seconds)
+        .then(function (seconds) {
+        console.log("seconds = the actual time that the player seeked to") 
+    })
+    .catch(function (error) {
+    switch (error.name) {
+        case 'RangeError':
+            // the time was less than 0 or greater than the video’s duration
+            console.log("RangeError")
+            break;
 
+        default:
+            console.log("some other error occurred") 
+            break;
+        }
+    });
+}
+//  пример setCurrentTime(seconds: number): Promise<number, (RangeError|Error)>
 // player.setCurrentTime(30.456).then(function(seconds) {
 //     // seconds = the actual time that the player seeked to
 // }).catch(function(error) {
@@ -51,23 +71,3 @@ console.log(currentTime);
 //             break;
 //     }
 // });
-if (time === 571.52) {
-    localStorage.removeItem('videoplayer-current-time'); //  удаляем с локалстор
-} else {
-    player
-    .setCurrentTime(time)
-        .then(function (seconds) {
-        // seconds = the actual time that the player seeked to
-    })
-    .catch(function (error) {
-    switch (error.name) {
-        case 'RangeError':
-            // the time was less than 0 or greater than the video’s duration
-            break;
-
-        default:
-            // some other error occurred
-            break;
-    }
-    });
-}
